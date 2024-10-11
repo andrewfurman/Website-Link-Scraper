@@ -1,11 +1,11 @@
 from flask import Blueprint, render_template, request, redirect, url_for
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
-from sqlalchemy import desc
 import os
-from source_websites.source_website_model import SourceWebsite
 import pytz
+from source_websites.source_website_model import SourceWebsite
 from source_websites.scrape_website import scrape_website
+from source_websites.scrape_missing_data import scrape_missing_data
 
 source_website_bp = Blueprint('source_website', __name__, 
                               template_folder='templates')
@@ -59,4 +59,9 @@ def scrape_website_route(id):
 def add_found_urls_route():
     from source_websites.add_found_urls import add_found_html_urls
     add_found_html_urls()
+    return redirect(url_for('source_website.index'))
+
+@source_website_bp.route('/scrape_missing_data', methods=['POST'])
+def scrape_missing_data_route():
+    scrape_missing_data()
     return redirect(url_for('source_website.index'))
