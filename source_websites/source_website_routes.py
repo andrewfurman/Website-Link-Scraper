@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
+from sqlalchemy import desc
 import os
 from source_websites.source_website_model import SourceWebsite
 import pytz
@@ -16,7 +17,7 @@ Session = sessionmaker(bind=engine)
 @source_website_bp.route('/')
 def index():
     session = Session()
-    websites = session.query(SourceWebsite).all()
+    websites = session.query(SourceWebsite).order_by(SourceWebsite.id.asc()).all()
     
     # Convert UTC times to Eastern Time
     eastern = pytz.timezone('US/Eastern')
