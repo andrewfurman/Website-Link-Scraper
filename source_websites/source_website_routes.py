@@ -30,9 +30,6 @@ def index():
     session.close()
     return render_template('source_websites.html', websites=websites)
 
-# ... (rest of the code remains the same)
-
-# Add this new route to handle form submission
 @source_website_bp.route('/add_url', methods=['POST'])
 def add_url():
     url = request.form['url']

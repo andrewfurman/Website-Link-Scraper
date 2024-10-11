@@ -7,104 +7,102 @@
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
-<body class="bg-gray-100 min-h-screen flex flex-col items-center justify-start p-8">
-    <div class="max-w-7xl mx-auto p-6 bg-white rounded-lg shadow-md w-full">
-        <div class="flex justify-between items-center mb-6">
-            <h1 class="text-4xl font-bold text-indigo-600">Source Websites</h1>
-            
-            <div class="bg-gray-200 p-4 rounded-lg">
-    <h2 class="text-xl font-semibold mb-2">Scraping Actions</h2>
-    <div class="flex space-x-2">
-        <form action="{{ url_for('source_website.add_found_urls_route') }}" method="POST">
-            <button type="submit" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-green-500">
-                🔗 Add Found URLs
-            </button>
-        </form>
-        <button type="button" class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-yellow-500">
-            ⛏️ Scrape Missing Data
-        </button>
-    </div>
-</div>
-            
-        </div>
+<body class="bg-gray-100 min-h-screen flex flex-col items-center justify-start">
+    <div class="w-full p-8">
+        <div class="mx-auto bg-white rounded-lg shadow-md w-full p-6">
+            <div class="flex justify-between items-start">
+                <h1 class="text-4xl font-bold text-indigo-600">Source Websites</h1>
 
-        <form action="/add_url" method="POST" class="mb-8">
-            <div class="flex items-center justify-center">
-                <input type="url" name="url" placeholder="Enter a new URL" required
-                       class="px-4 py-2 border rounded-l-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 flex-grow">
-                <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded-r-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                    Add URL
-                </button>
+                <div class="bg-gray-200 p-4 rounded-lg">
+                    <h2 class="text-xl font-semibold mb-2">Scraping Actions</h2>
+                    <div class="flex space-x-2">
+                        <form action="{{ url_for('source_website.add_found_urls_route') }}" method="POST">
+                            <button type="submit" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-green-500">
+                                🔗 Add Found URLs
+                            </button>
+                        </form>
+                        <button type="button" class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-yellow-500">
+                            ⛏️ Scrape Missing Data
+                        </button>
+                    </div>
+                </div>
             </div>
-        </form>
 
-        <div class="overflow-x-auto">
-    <table class="w-full table-fixed">
-        <thead>
-            <tr>
-                <th class="w-16 p-2 break-words">ID</th>
-                <th class="w-48 p-2 break-words">Title</th>
-                <th class="w-64 p-2 break-words">URL</th>
-                <th class="w-40 p-2 break-words">Author</th>
-                <th class="w-48 p-2 break-words">Created Date</th>
-                <th class="w-48 p-2 break-words">Updated Date</th>
-                <th class="w-96 p-2 break-words">Full Text</th>
-                <th class="w-96 p-2 break-words">Found URLs</th>
-                <th class="w-24 p-2 break-words">Scrape</th>
-                <th class="w-24 p-2 break-words">Delete</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for website in websites %}
-            <tr>
-                <td class="w-16 p-2 break-words whitespace-normal">{{ website.id }}</td>
-                <td class="w-48 p-2 break-words whitespace-normal">{{ website.title }}</td>
-                <td class="w-64 p-2 break-words whitespace-normal">
-                    <a href="{{ website.url }}" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-800 underline">
-                        {{ website.url }}
-                    </a>
-                </td>
-                <td class="w-40 p-2 break-words whitespace-normal">{{ website.author }}</td>
-                
-                <td class="w-48 p-2 break-words whitespace-normal">
-                    {{ website.created_date.strftime('%b %d %Y @ %I:%M%p ET') if website.created_date else 'N/A' }}
-                </td>
-                <td class="w-48 p-2 break-words whitespace-normal">
-                    {{ website.updated_date.strftime('%b %d %Y @ %I:%M%p ET') if website.updated_date else 'N/A' }}
-                </td>
-                
-                <td class="w-96 p-2 break-words whitespace-normal">
-                    <div class="max-h-20 overflow-y-auto">
-                        {{ website.full_text }}
-                    </div>
-                </td>
-                <td class="w-96 p-2 break-words whitespace-normal">
-                    <div class="max-h-20 overflow-y-auto">
-                        {{ website.found_urls }}
-                    </div>
-                </td>
-                <td class="w-24 p-2 break-words whitespace-normal">
-                    <form action="{{ url_for('source_website.scrape_website_route', id=website.id) }}" method="POST">
-                        <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                            🔄 Scrape
-                        </button>
-                    </form>
-                </td>
-                <td class="w-24 p-2 break-words whitespace-normal">
-                    <form action="{{ url_for('source_website.delete_website', id=website.id) }}" method="POST">
-                        <button type="submit" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
-                            🗑️ Delete
-                        </button>
-                    </form>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
-        
+            <form action="/add_url" method="POST" class="mt-8 mb-8">
+                <div class="flex items-center justify-center">
+                    <input type="url" name="url" placeholder="Enter a new URL" required
+                           class="px-4 py-2 border rounded-l-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 flex-grow">
+                    <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded-r-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        Add URL
+                    </button>
+                </div>
+            </form>
+
+            <div class="overflow-x-auto">
+                <table class="w-full table-fixed">
+                    <thead>
+                        <tr>
+                            <th class="w-16 p-2 break-words">ID</th>
+                            <th class="w-48 p-2 break-words">Title</th>
+                            <th class="w-64 p-2 break-words">URL</th>
+                            <th class="w-40 p-2 break-words">Author</th>
+                            <th class="w-48 p-2 break-words">Created Date</th>
+                            <th class="w-48 p-2 break-words">Updated Date</th>
+                            <th class="w-96 p-2 break-words">Full Text</th>
+                            <th class="w-96 p-2 break-words">Found URLs</th>
+                            <th class="w-24 p-2 break-words">Scrape</th>
+                            <th class="w-24 p-2 break-words">Delete</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for website in websites %}
+                        <tr>
+                            <td class="w-16 p-2 break-words whitespace-normal">{{ website.id }}</td>
+                            <td class="w-48 p-2 break-words whitespace-normal">{{ website.title }}</td>
+                            <td class="w-64 p-2 break-words whitespace-normal">
+                                <a href="{{ website.url }}" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-800 underline">
+                                    {{ website.url }}
+                                </a>
+                            </td>
+                            <td class="w-40 p-2 break-words whitespace-normal">{{ website.author }}</td>
+                            <td class="w-48 p-2 break-words whitespace-normal">
+                                {{ website.created_date.strftime('%b %d %Y @ %I:%M%p ET') if website.created_date else 'N/A' }}
+                            </td>
+                            <td class="w-48 p-2 break-words whitespace-normal">
+                                {{ website.updated_date.strftime('%b %d %Y @ %I:%M%p ET') if website.updated_date else 'N/A' }}
+                            </td>
+                            <td class="w-96 p-2 break-words whitespace-normal">
+                                <div class="max-h-20 overflow-y-auto">
+                                    {{ website.full_text }}
+                                </div>
+                            </td>
+                            <td class="w-96 p-2 break-words whitespace-normal">
+                                <div class="max-h-20 overflow-y-auto">
+                                    {{ website.found_urls }}
+                                </div>
+                            </td>
+                            <td class="w-24 p-2 break-words whitespace-normal">
+                                <form action="{{ url_for('source_website.scrape_website_route', id=website.id) }}" method="POST">
+                                    <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                                        🔄 Scrape
+                                    </button>
+                                </form>
+                            </td>
+                            <td class="w-24 p-2 break-words whitespace-normal">
+                                <form action="{{ url_for('source_website.delete_website', id=website.id) }}" method="POST">
+                                    <button type="submit" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
+                                        🗑️ Delete
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
-    
+
     <footer class="mt-8 text-center text-gray-500">
         <p>👋 2024 Andrew Furman PwC. All Open Source.</p>
     </footer>
