@@ -56,3 +56,9 @@ def delete_website(id):
 def scrape_website_route(id):
     scrape_website(id)
     return redirect(url_for('source_website.index'))
+
+@source_website_bp.route('/add_found_urls', methods=['POST'])
+def add_found_urls_route():
+    from source_websites.add_found_urls import add_found_html_urls
+    add_found_html_urls()
+    return redirect(url_for('source_website.index'))

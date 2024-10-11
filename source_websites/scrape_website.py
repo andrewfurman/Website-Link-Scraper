@@ -7,41 +7,56 @@ from sqlalchemy.orm import sessionmaker
 import os
 from source_websites.source_website_model import SourceWebsite
 from datetime import datetime
+import urllib.parse
+
+def extract_urls(soup, base_url, patterns):
+  urls = set()
+  for a_tag in soup.find_all('a', href=True):
+      url = a_tag['href']
+      # Handle relative URLs
+      full_url = urllib.parse.urljoin(base_url, url)
+      if any(pattern in full_url for pattern in patterns):
+          urls.add(full_url)
+  return list(urls)
 
 def scrape_website(website_id):
-    # Create engine and session
     engine = create_engine(os.environ['DATABASE_URL'])
     Session = sessionmaker(bind=engine)
     session = Session()
 
     try:
-        # Fetch the website from the database
         website = session.query(SourceWebsite).filter_by(id=website_id).first()
         if not website:
             print(f"Website with id {website_id} not found.")
             return
 
-        # Fetch the webpage content
         response = requests.get(website.url)
-        response.raise_for_status()  # Raise an exception for bad status codes
+        response.raise_for_status()
 
-        # Parse the HTML content
         soup = BeautifulSoup(response.text, 'html.parser')
 
-        # Update title
         website.title = soup.title.string if soup.title else "No title found"
 
-        # Update author (this is a simplistic approach, might need adjustment based on site structure)
         author_tag = soup.find('meta', attrs={'name': 'author'})
         website.author = author_tag['content'] if author_tag else "Unknown"
 
-        # Update full text
         website.full_text = soup.get_text(separator=' ', strip=True)
 
-        # Update updated_date
+        # Define multiple patterns to search for
+        patterns = [
+            "/dobi/division_insurance/solvency/annualstatements/",
+            "/reports/",
+            "/publications/",
+            ".pdf"
+
+        ]
+
+        # Extract and store found URLs
+        found_urls = extract_urls(soup, website.url, patterns)
+        website.found_urls = ', '.join(found_urls)
+
         website.updated_date = datetime.utcnow()
 
-        # Commit changes to the database
         session.commit()
         print(f"Successfully updated website with id {website_id}")
 
@@ -51,6 +66,3 @@ def scrape_website(website_id):
 
     finally:
         session.close()
-
-# Example usage:
-# scrape_website(1)  # Where 1 is the id of the website in the database
