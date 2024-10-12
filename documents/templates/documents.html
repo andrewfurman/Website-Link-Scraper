@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documents</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col items-center justify-start">
+    <div class="w-full p-8">
+        <div class="mx-auto bg-white rounded-lg shadow-md w-full p-6">
+            <h1 class="text-4xl font-bold text-indigo-600 mb-8">Documents</h1>
+
+            <div class="mb-8">
+                <h2 class="text-2xl font-semibold mb-4">Upload New Document</h2>
+                <form action="#" method="POST" enctype="multipart/form-data" class="flex items-center space-x-4">
+                    <input type="file" name="document" accept=".pdf,.doc,.docx" class="border p-2 rounded">
+                    <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        Upload
+                    </button>
+                </form>
+            </div>
+
+            <div>
+                <h2 class="text-2xl font-semibold mb-4">Document List</h2>
+                <table class="w-full table-auto">
+                    <thead>
+                        <tr class="bg-gray-200">
+                            <th class="px-4 py-2 text-left">Name</th>
+                            <th class="px-4 py-2 text-left">Upload Date</th>
+                            <th class="px-4 py-2 text-left">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Placeholder rows -->
+                        <tr>
+                            <td class="border px-4 py-2">Document1.pdf</td>
+                            <td class="border px-4 py-2">2023-12-01</td>
+                            <td class="border px-4 py-2">
+                                <button class="text-blue-600 hover:text-blue-800">View</button>
+                                <button class="text-red-600 hover:text-red-800 ml-2">Delete</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="border px-4 py-2">Document2.docx</td>
+                            <td class="border px-4 py-2">2023-12-05</td>
+                            <td class="border px-4 py-2">
+                                <button class="text-blue-600 hover:text-blue-800">View</button>
+                                <button class="text-red-600 hover:text-red-800 ml-2">Delete</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <footer class="mt-8 text-center text-gray-500">
+        <p>© 2024 Document Management System. All rights reserved.</p>
+    </footer>
+</body>
+</html>
