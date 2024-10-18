@@ -4,6 +4,8 @@ from sqlalchemy.orm import sessionmaker
 import os
 from documents.documents_model import Document
 from datetime import datetime
+from flask import jsonify
+from .add_documents_from_source import add_documents_from_source_websites
 
 documents_bp = Blueprint('documents', __name__, template_folder='templates')
 
@@ -56,3 +58,8 @@ def delete_document(id):
     session.commit()
     session.close()
     return redirect(url_for('documents.index'))
+
+@documents_bp.route('/add_docs_from_sources', methods=['POST'])
+def add_docs_from_sources():
+    result = add_documents_from_source_websites()
+    return jsonify({"message": result})
