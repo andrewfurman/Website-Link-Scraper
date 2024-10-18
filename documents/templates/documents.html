@@ -18,7 +18,11 @@
                 <button id="addDocsFromSources" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
                     🌐 Add Docs from Sources
                 </button>
+                <button id="extractMissingFullText" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded ml-2">
+                    📥 Extract Missing Full Texts
+                </button>
                 <span id="addDocsResult" class="ml-4 text-sm"></span>
+                <span id="extractResult" class="ml-4 text-sm"></span>
             </div>
 
             <div class="overflow-x-auto">
@@ -134,7 +138,29 @@
         .catch(error => {
             console.error('Error updating document:', error);
         });
-}
+    }
+
+    document.getElementById('extractMissingFullText').addEventListener('click', function() {
+    this.disabled = true;
+    this.textContent = '🔄 Processing...';
+    document.getElementById('extractResult').textContent = '';
+
+    fetch('/documents/extract_missing_full_text', {
+        method: 'POST',
+    })
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('extractResult').textContent = data.message;
+        this.textContent = '📥 Extract Missing Full Texts';
+        this.disabled = false;
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        document.getElementById('extractResult').textContent = 'An error occurred';
+        this.textContent = '📥 Extract Missing Full Texts';
+        this.disabled = false;
+    });
+});
     
 document.getElementById('addDocsFromSources').addEventListener('click', function() {
     this.disabled = true;
@@ -157,6 +183,8 @@ document.getElementById('addDocsFromSources').addEventListener('click', function
         this.disabled = false;
     });
 });
+
+    
 </script>
     
 </body>

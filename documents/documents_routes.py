@@ -6,6 +6,7 @@ from documents.documents_model import Document
 from datetime import datetime
 from flask import jsonify
 from .add_documents_from_source import add_documents_from_source_websites
+from .extract_missing_full_text import extract_missing_full_text
 
 documents_bp = Blueprint('documents', __name__, template_folder='templates')
 
@@ -62,4 +63,9 @@ def delete_document(id):
 @documents_bp.route('/add_docs_from_sources', methods=['POST'])
 def add_docs_from_sources():
     result = add_documents_from_source_websites()
+    return jsonify({"message": result})
+
+@documents_bp.route('/extract_missing_full_text', methods=['POST'])
+def extract_missing_full_text_route():
+    result = extract_missing_full_text()
     return jsonify({"message": result})
