@@ -66,17 +66,20 @@
                                 <span class="document-text">{{ document.full_contents|default('', true)|truncate(200) }}</span>
                                 <textarea class="w-full p-1 border rounded hidden document-input" rows="3" data-field="full_contents">{{ document.full_contents }}</textarea>
                             </td>
-                            <td class="w-24 p-2 break-words whitespace-normal">
-                                <button onclick="editDocument({{ document.id }})" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded edit-btn"> 📝 Edit 
-                                </button>
-                                <button onclick="saveDocument({{ document.id }})" class="bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-2 rounded hidden save-btn">
-                                    💾 Save
-                                </button>
-                                <form action="{{ url_for('documents.delete_document', id=document.id) }}" method="POST" class="inline">
-                                    <button type="submit" class="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded mt-1">
-                                        🗑️ Delete
+                            <td class="w-32 p-2 break-words whitespace-normal text-center">
+                                <div class="flex flex-col items-center space-y-2">
+                                    <button onclick="editDocument({{ document.id }})" class="w-24 inline-flex justify-center items-center bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded edit-btn whitespace-nowrap text-sm">
+                                        📝 Edit 
                                     </button>
-                                </form>
+                                    <button onclick="saveDocument({{ document.id }})" class="w-24 inline-flex justify-center items-center bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-2 rounded hidden save-btn whitespace-nowrap text-sm">
+                                        💾 Save
+                                    </button>
+                                    <form action="{{ url_for('documents.delete_document', id=document.id) }}" method="POST" class="inline">
+                                        <button type="submit" class="w-24 inline-flex justify-center items-center bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded whitespace-nowrap text-sm">
+                                            🗑️ Delete
+                                        </button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
                         {% endfor %}
@@ -96,44 +99,42 @@
     }
 
     function saveDocument(id) {
-        const row = document.getElementById(`document-${id}`);
-        const data = {
-            title: row.querySelector('[data-field="title"]').value,
-            author: row.querySelector('[data-field="author"]').value,
-            url: row.querySelector('[data-field="url"]').value,
-            summary: row.querySelector('[data-field="summary"]').value,
-            full_contents: row.querySelector('[data-field="full_contents"]').value
-        };
+    const row = document.getElementById(`document-${id}`);
+    const data = {
+        title: row.querySelector('[data-field="title"]').value,
+        author: row.querySelector('[data-field="author"]').value,
+        url: row.querySelector('[data-field="url"]').value,
+        summary: row.querySelector('[data-field="summary"]').value,
+        full_contents: row.querySelector('[data-field="full_contents"]').value
+    };
 
-        axios.post(`/documents/edit_document/${id}`, data)
-            .then(response => {
-                alert('Document updated successfully');
-                // Update the displayed text and hide input fields
-                row.querySelectorAll('.document-input').forEach(input => {
-                    const textEl = input.previousElementSibling;
-                    textEl.textContent = input.value;
-                    textEl.classList.remove('hidden');
-                    input.classList.add('hidden');
-                });
-                // Update the "Updated Date" cell
-                const updatedDateCell = row.querySelector('td:nth-child(6)');
-                updatedDateCell.textContent = new Date().toLocaleString('en-US', { 
-                    month: 'short', 
-                    day: '2-digit', 
-                    year: 'numeric', 
-                    hour: '2-digit', 
-                    minute: '2-digit', 
-                    hour12: true 
-                }) + ' ET';
-                // Show edit button and hide save button
-                row.querySelector('.edit-btn').classList.remove('hidden');
-                row.querySelector('.save-btn').classList.add('hidden');
-            })
-            .catch(error => {
-                console.error('Error updating document:', error);
-                alert('Error updating document');
+    axios.post(`/documents/edit_document/${id}`, data)
+        .then(response => {
+            // Update the displayed text and hide input fields
+            row.querySelectorAll('.document-input').forEach(input => {
+                const textEl = input.previousElementSibling;
+                textEl.textContent = input.value;
+                textEl.classList.remove('hidden');
+                input.classList.add('hidden');
             });
-    }
+            // Update the "Updated Date" cell
+            const updatedDateCell = row.querySelector('td:nth-child(6)');
+            updatedDateCell.textContent = new Date().toLocaleString('en-US', { 
+                month: 'short', 
+                day: '2-digit', 
+                year: 'numeric', 
+                hour: '2-digit', 
+                minute: '2-digit', 
+                hour12: true 
+            }) + ' ET';
+            // Show edit button and hide save button
+            row.querySelector('.edit-btn').classList.remove('hidden');
+            row.querySelector('.save-btn').classList.add('hidden');
+        })
+        .catch(error => {
+            console.error('Error updating document:', error);
+        });
+}
     
 document.getElementById('addDocsFromSources').addEventListener('click', function() {
     this.disabled = true;
