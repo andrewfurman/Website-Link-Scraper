@@ -3,7 +3,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
 import os
 import pytz
-from source_websites.source_website_model import SourceWebsite
+from source_websites.source_website_model import SourceWebsite, ScrapingCriteria
 from source_websites.scrape_website import scrape_website
 from source_websites.scrape_missing_data import scrape_missing_data
 
@@ -27,8 +27,11 @@ def index():
         if website.updated_date:
             website.updated_date = website.updated_date.replace(tzinfo=pytz.UTC).astimezone(eastern)
     
+    # Fetch scraping criteria
+    scraping_criteria = session.query(ScrapingCriteria).all()
+    
     session.close()
-    return render_template('source_websites.html', websites=websites)
+    return render_template('source_websites.html', websites=websites, scraping_criteria=scraping_criteria)
 
 @source_website_bp.route('/add_url', methods=['POST'])
 def add_url():
@@ -64,4 +67,42 @@ def add_found_urls_route():
 @source_website_bp.route('/scrape_missing_data', methods=['POST'])
 def scrape_missing_data_route():
     scrape_missing_data()
+    return redirect(url_for('source_website.index'))
+
+@source_website_bp.route('/add_scraping_criteria', methods=['POST'])
+def add_scraping_criteria():
+    text_contains = request.form['text_contains']
+    include_exclude = request.form['include_exclude']
+    
+    session = Session()
+    new_criteria = ScrapingCriteria(text_contains=text_contains, include_exclude=include_exclude)
+    session.add(new_criteria)
+    session.commit()
+    session.close()
+    
+    return redirect(url_for('source_website.index'))
+
+@source_website_bp.route('/edit_scraping_criteria/<int:id>', methods=['GET', 'POST'])
+def edit_scraping_criteria(id):
+    session = Session()
+    criteria = session.query(ScrapingCriteria).get(id)
+    
+    if request.method == 'POST':
+        criteria.text_contains = request.form['text_contains']
+        criteria.include_exclude = request.form['include_exclude']
+        session.commit()
+        session.close()
+        return redirect(url_for('source_website.index'))
+    
+    session.close()
+    return render_template('edit_scraping_criteria.html', criteria=criteria)
+
+@source_website_bp.route('/delete_scraping_criteria/<int:id>', methods=['POST'])
+def delete_scraping_criteria(id):
+    session = Session()
+    criteria = session.query(ScrapingCriteria).get(id)
+    if criteria:
+        session.delete(criteria)
+        session.commit()
+    session.close()
     return redirect(url_for('source_website.index'))

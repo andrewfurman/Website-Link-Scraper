@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, Text, DateTime
+from sqlalchemy import Column, Integer, Text, DateTime, Enum
 from sqlalchemy.sql import func
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -18,3 +18,11 @@ class SourceWebsite(Base):
 
     def __repr__(self):
         return f"<SourceWebsite(id={self.id}, title='{self.title}', url='{self.url}')>"
+
+class ScrapingCriteria(Base):
+    __tablename__ = 'scraping_criteria'
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    text_contains = Column(Text, nullable=False)
+    include_exclude = Column(Enum('include', 'exclude', name='include_exclude_enum'), nullable=False)
+    def __repr__(self):
+        return f"<ScrapingCriteria(id={self.id}, text_contains='{self.text_contains}', include_exclude='{self.include_exclude}')>"
