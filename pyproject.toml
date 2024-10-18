@@ -10,7 +10,7 @@ flask = "^3.0.0"
 gunicorn = "^21.2.0"
 sqlalchemy = "^2.0.23"
 psycopg2-binary = "^2.9.9"
-pytz = "^2023.3"  # Add this line
+pytz = "^2023.3"
 beautifulsoup4 = "^4.10.0"
 requests = "^2.26.0"
 

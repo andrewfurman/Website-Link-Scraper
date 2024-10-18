@@ -2,6 +2,8 @@ import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from source_websites.source_website_model import Base, SourceWebsite
+from documents.documents_model import Document
+
 
 # Use the DATABASE_URL from environment variables
 DATABASE_URL = os.environ['DATABASE_URL']
