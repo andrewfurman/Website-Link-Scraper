@@ -5,19 +5,40 @@ import requests
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 import os
-from source_websites.source_website_model import SourceWebsite
+from source_websites.source_website_model import SourceWebsite, ScrapingCriteria
 from datetime import datetime
 import urllib.parse
 
-def extract_urls(soup, base_url, patterns):
-  urls = set()
-  for a_tag in soup.find_all('a', href=True):
-      url = a_tag['href']
-      # Handle relative URLs
-      full_url = urllib.parse.urljoin(base_url, url)
-      if any(pattern in full_url for pattern in patterns):
-          urls.add(full_url)
-  return list(urls)
+def extract_urls(soup, base_url, scraping_criteria):
+    urls = set()
+    for a_tag in soup.find_all('a', href=True):
+        url = a_tag['href']
+        full_url = urllib.parse.urljoin(base_url, url)
+        
+        # Check if the URL should be included
+        should_include = False
+        for criteria in scraping_criteria:
+            if criteria.include_exclude == 'include':
+                if criteria.text_contains.lower() in full_url.lower():
+                    should_include = True
+                    break
+        
+        # If no include criteria matched, include by default
+        if not should_include and not any(c.include_exclude == 'include' for c in scraping_criteria):
+            should_include = True
+        
+        # Check if the URL should be excluded
+        if should_include:
+            for criteria in scraping_criteria:
+                if criteria.include_exclude == 'exclude':
+                    if criteria.text_contains.lower() in full_url.lower():
+                        should_include = False
+                        break
+        
+        if should_include:
+            urls.add(full_url)
+    
+    return list(urls)
 
 def scrape_website(website_id):
     engine = create_engine(os.environ['DATABASE_URL'])
@@ -29,6 +50,9 @@ def scrape_website(website_id):
         if not website:
             print(f"Website with id {website_id} not found.")
             return
+
+        # Fetch all scraping criteria
+        scraping_criteria = session.query(ScrapingCriteria).all()
 
         response = requests.get(website.url)
         response.raise_for_status()
@@ -42,17 +66,8 @@ def scrape_website(website_id):
 
         website.full_text = soup.get_text(separator=' ', strip=True)
 
-        # Define multiple patterns to search for
-        patterns = [
-            "/dobi/division_insurance/solvency/annualstatements/",
-            "/reports/",
-            "/publications/",
-            ".pdf"
-
-        ]
-
-        # Extract and store found URLs
-        found_urls = extract_urls(soup, website.url, patterns)
+        # Extract and store found URLs using the scraping criteria
+        found_urls = extract_urls(soup, website.url, scraping_criteria)
         website.found_urls = ', '.join(found_urls)
 
         website.updated_date = datetime.utcnow()
