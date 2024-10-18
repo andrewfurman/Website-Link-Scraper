@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documents</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col">
+    {% include 'header.html' %}
+
+    <div class="w-full p-8">
+        <div class="mx-auto bg-white rounded-lg shadow-md w-full p-6">
+            <h1 class="text-4xl font-bold text-blue-900">📄 Documents</h1>
+
+            <!-- ... (keep the add document form as is) ... -->
+
+            <div class="overflow-x-auto">
+                <table class="w-full table-fixed bg-white border border-gray-300">
+                    <thead>
+                        <tr class="bg-blue-900 text-white">
+                            <th class="w-16 p-2 break-words">ID</th>
+                            <th class="w-48 p-2 break-words">Title</th>
+                            <th class="w-48 p-2 break-words">Author</th>
+                            <th class="w-64 p-2 break-words">URL</th>
+                            <th class="w-48 p-2 break-words">Created Date</th>
+                            <th class="w-48 p-2 break-words">Updated Date</th>
+                            <th class="w-96 p-2 break-words">Summary</th>
+                            <th class="w-24 p-2 break-words">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for document in documents %}
+                        <tr id="document-{{ document.id }}">
+                            <td class="w-16 p-2 break-words whitespace-normal">{{ document.id }}</td>
+                            <td class="w-48 p-2 break-words whitespace-normal">
+                                <span class="document-text">{{ document.title }}</span>
+                                <input type="text" class="w-full p-1 border rounded hidden document-input" value="{{ document.title }}" data-field="title">
+                            </td>
+                            <td class="w-48 p-2 break-words whitespace-normal">
+                                <span class="document-text">{{ document.author }}</span>
+                                <input type="text" class="w-full p-1 border rounded hidden document-input" value="{{ document.author }}" data-field="author">
+                            </td>
+                            <td class="w-64 p-2 break-words whitespace-normal">
+                                <span class="document-text">{{ document.url }}</span>
+                                <input type="url" class="w-full p-1 border rounded hidden document-input" value="{{ document.url }}" data-field="url">
+                            </td>
+                            <td class="w-48 p-2 break-words whitespace-normal">
+                                {{ document.created_date.strftime('%b %d %Y @ %I:%M%p ET') if document.created_date else 'N/A' }}
+                            </td>
+                            <td class="w-48 p-2 break-words whitespace-normal">
+                                {{ document.updated_date.strftime('%b %d %Y @ %I:%M%p ET') if document.updated_date else 'N/A' }}
+                            </td>
+                            <td class="w-96 p-2 break-words whitespace-normal">
+                                <span class="document-text">{{ document.summary }}</span>
+                                <textarea class="w-full p-1 border rounded hidden document-input" rows="3" data-field="summary">{{ document.summary }}</textarea>
+                            </td>
+                            <td class="w-24 p-2 break-words whitespace-normal">
+                                <button onclick="editDocument({{ document.id }})" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded edit-btn"> 📝 Edit 
+                                </button>
+                                <button onclick="saveDocument({{ document.id }})" class="bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-2 rounded hidden save-btn">
+                                    💾 Save
+                                </button>
+                                <form action="{{ url_for('documents.delete_document', id=document.id) }}" method="POST" class="inline">
+                                    <button type="submit" class="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded mt-1">
+                                        🗑️ Delete
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    function editDocument(id) {
+        const row = document.getElementById(`document-${id}`);
+        row.querySelectorAll('.document-text').forEach(el => el.classList.add('hidden'));
+        row.querySelectorAll('.document-input').forEach(el => el.classList.remove('hidden'));
+        row.querySelector('.edit-btn').classList.add('hidden');
+        row.querySelector('.save-btn').classList.remove('hidden');
+    }
+
+    function saveDocument(id) {
+        const row = document.getElementById(`document-${id}`);
+        const data = {
+            title: row.querySelector('[data-field="title"]').value,
+            author: row.querySelector('[data-field="author"]').value,
+            url: row.querySelector('[data-field="url"]').value,
+            summary: row.querySelector('[data-field="summary"]').value
+        };
+
+        axios.post(`/documents/edit_document/${id}`, data)
+            .then(response => {
+                alert('Document updated successfully');
+                // Update the displayed text and hide input fields
+                row.querySelectorAll('.document-input').forEach(input => {
+                    const textEl = input.previousElementSibling;
+                    textEl.textContent = input.value;
+                    textEl.classList.remove('hidden');
+                    input.classList.add('hidden');
+                });
+                // Update the "Updated Date" cell
+                const updatedDateCell = row.querySelector('td:nth-child(6)');
+                updatedDateCell.textContent = new Date().toLocaleString('en-US', { 
+                    month: 'short', 
+                    day: '2-digit', 
+                    year: 'numeric', 
+                    hour: '2-digit', 
+                    minute: '2-digit', 
+                    hour12: true 
+                }) + ' ET';
+                // Show edit button and hide save button
+                row.querySelector('.edit-btn').classList.remove('hidden');
+                row.querySelector('.save-btn').classList.add('hidden');
+            })
+            .catch(error => {
+                console.error('Error updating document:', error);
+                alert('Error updating document');
+            });
+    }
+    </script>
+</body>
+</html>
