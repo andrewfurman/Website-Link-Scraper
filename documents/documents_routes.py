@@ -69,3 +69,14 @@ def add_docs_from_sources():
 def extract_missing_full_text_route():
     result = extract_missing_full_text()
     return jsonify({"message": result})
+
+@documents_bp.route('/view/<int:id>')
+def view_document(id):
+    session = Session()
+    try:
+        document = session.query(Document).filter(Document.id == id).first()
+        if document is None:
+            return "Document not found", 404
+        return render_template('view_document.html', document=document)
+    finally:
+        session.close()

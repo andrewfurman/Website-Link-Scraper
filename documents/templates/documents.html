@@ -43,7 +43,11 @@
                     <tbody>
                         {% for document in documents %}
                         <tr id="document-{{ document.id }}">
-                            <td class="w-16 p-2 break-words whitespace-normal">{{ document.id }}</td>
+                            <td class="w-16 p-2 break-words whitespace-normal">
+                                <a href="{{ url_for('documents.view_document', id=document.id) }}" class="text-blue-600 hover:text-blue-800 underline">
+                                    {{ document.id }}
+                                </a>
+                            </td>
                             <td class="w-48 p-2 break-words whitespace-normal">
                                 <span class="document-text">{{ document.title }}</span>
                                 <input type="text" class="w-full p-1 border rounded hidden document-input" value="{{ document.title }}" data-field="title">

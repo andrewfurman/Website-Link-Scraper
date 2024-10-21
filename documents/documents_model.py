@@ -18,5 +18,26 @@ class Document(Base):
     created_date = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_date = Column(DateTime(timezone=True), onupdate=func.now(), nullable=True)
 
+    # Add relationship to DocumentSection
+    sections = relationship("DocumentSection", back_populates="document")
+
     def __repr__(self):
         return f"<Document(id={self.id}, title='{self.title}', url='{self.url}')>"
+
+class DocumentSection(Base):
+    __tablename__ = 'document_sections'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    document_id = Column(Integer, ForeignKey('documents.id'), nullable=False)
+    start_page = Column(Integer, nullable=False)
+    end_page = Column(Integer, nullable=False)
+    document_text = Column(Text, nullable=True)
+    custom_prompt = Column(Text, nullable=True)
+    created_date = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_date = Column(DateTime(timezone=True), onupdate=func.now(), nullable=True)
+
+    # Add relationship to Document
+    document = relationship("Document", back_populates="sections")
+
+    def __repr__(self):
+        return f"<DocumentSection(id={self.id}, document_id={self.document_id}, start_page={self.start_page}, end_page={self.end_page})>"

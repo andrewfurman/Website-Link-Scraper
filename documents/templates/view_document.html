@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Document</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col">
+    {% include 'header.html' %}
+
+    <div class="w-full p-8">
+        <div class="mx-auto bg-white rounded-lg shadow-md w-full p-6">
+            <h1 class="text-4xl font-bold text-blue-900 mb-6">View Document</h1>
+
+            <!-- Document Details -->
+            <div class="mb-8">
+                <h2 class="text-2xl font-semibold text-blue-800 mb-4">Document Details</h2>
+                <table class="w-full border-collapse border border-gray-300">
+                    <tr>
+                        <th class="border border-gray-300 p-2 bg-gray-100">ID</th>
+                        <td class="border border-gray-300 p-2">{{ document.id }}</td>
+                    </tr>
+                    <tr>
+                        <th class="border border-gray-300 p-2 bg-gray-100">Title</th>
+                        <td class="border border-gray-300 p-2">{{ document.title }}</td>
+                    </tr>
+                    <tr>
+                        <th class="border border-gray-300 p-2 bg-gray-100">Author</th>
+                        <td class="border border-gray-300 p-2">{{ document.author }}</td>
+                    </tr>
+                    <tr>
+                        <th class="border border-gray-300 p-2 bg-gray-100">URL</th>
+                        <td class="border border-gray-300 p-2">{{ document.url }}</td>
+                    </tr>
+                    <tr>
+                        <th class="border border-gray-300 p-2 bg-gray-100">Created Date</th>
+                        <td class="border border-gray-300 p-2">{{ document.created_date }}</td>
+                    </tr>
+                    <tr>
+                        <th class="border border-gray-300 p-2 bg-gray-100">Updated Date</th>
+                        <td class="border border-gray-300 p-2">{{ document.updated_date }}</td>
+                    </tr>
+                    <tr>
+                        <th class="border border-gray-300 p-2 bg-gray-100">Summary</th>
+                        <td class="border border-gray-300 p-2">{{ document.summary }}</td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- Document Sections -->
+            <div class="mb-8">
+                <h2 class="text-2xl font-semibold text-blue-800 mb-4">Document Sections</h2>
+                <table class="w-full border-collapse border border-gray-300">
+                    <thead>
+                        <tr class="bg-gray-100">
+                            <th class="border border-gray-300 p-2">ID</th>
+                            <th class="border border-gray-300 p-2">Start Page</th>
+                            <th class="border border-gray-300 p-2">End Page</th>
+                            <th class="border border-gray-300 p-2">Custom Prompt</th>
+                            <th class="border border-gray-300 p-2">Document Text</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for section in document.sections %}
+                        <tr>
+                            <td class="border border-gray-300 p-2">{{ section.id }}</td>
+                            <td class="border border-gray-300 p-2">{{ section.start_page }}</td>
+                            <td class="border border-gray-300 p-2">{{ section.end_page }}</td>
+                            <td class="border border-gray-300 p-2">{{ section.custom_prompt }}</td>
+                            <td class="border border-gray-300 p-2">
+                                <div class="overflow-auto h-20">
+                                    <pre class="text-xs">{{ section.document_text }}</pre>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Full Contents -->
+            <div>
+                <h2 class="text-2xl font-semibold text-blue-800 mb-4">Full Contents</h2>
+                <div class="border border-gray-300 p-2 h-64 overflow-auto">
+                    <pre class="text-xs">{{ document.full_contents }}</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
