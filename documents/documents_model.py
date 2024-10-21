@@ -15,6 +15,7 @@ class Document(Base):
     full_contents = Column(Text, nullable=True)
     url = Column(Text, nullable=True)
     summary = Column(Text, nullable=True)
+    word_count = Column(Integer, nullable=True)
     created_date = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_date = Column(DateTime(timezone=True), onupdate=func.now(), nullable=True)
 
@@ -29,6 +30,8 @@ class DocumentSection(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     document_id = Column(Integer, ForeignKey('documents.id'), nullable=False)
+    title = Column(Text, nullable=True)  # New optional title field
+    summary = Column(Text, nullable=True)  # New optional summary field
     start_page = Column(Integer, nullable=False)
     end_page = Column(Integer, nullable=False)
     document_text = Column(Text, nullable=True)

@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>View Document</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <!-- Include Axios in the head section -->
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
 <body class="bg-gray-100 min-h-screen flex flex-col">
     {% include 'header.html' %}
@@ -13,6 +15,14 @@
         <div class="mx-auto bg-white rounded-lg shadow-md w-full p-6">
             <h1 class="text-4xl font-bold text-blue-900 mb-6">View Document</h1>
 
+            <!-- Generate Sections button and status message area -->
+            <div class="mb-4">
+                <button id="generateSectionsBtn" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
+                    ✂️ Generate Sections
+                </button>
+                <span id="sectionStatus" class="ml-4 text-sm"></span>
+            </div>
+            
             <!-- Document Details -->
             <div class="mb-8">
                 <h2 class="text-2xl font-semibold text-blue-800 mb-4">Document Details</h2>
@@ -70,7 +80,7 @@
                             <td class="border border-gray-300 p-2">{{ section.custom_prompt }}</td>
                             <td class="border border-gray-300 p-2">
                                 <div class="overflow-auto h-20">
-                                    <pre class="text-xs">{{ section.document_text }}</pre>
+                                    <pre class="text-xs whitespace-pre-wrap break-words overflow-wrap-anywhere max-w-xs">{{ section.document_text }}</pre>
                                 </div>
                             </td>
                         </tr>
@@ -88,5 +98,30 @@
             </div>
         </div>
     </div>
+    <script>
+    document.getElementById('generateSectionsBtn').addEventListener('click', function() {
+        this.disabled = true;
+        this.textContent = '🔄 Processing...';
+        document.getElementById('sectionStatus').textContent = '';
+        axios.post('/documents/create_sections/{{ document.id }}')
+            .then(response => {
+                if (response.data.success) {
+                    document.getElementById('sectionStatus').textContent = response.data.message;
+                    // Optionally, you can reload the page to show the new sections
+                    location.reload();
+                } else {
+                    document.getElementById('sectionStatus').textContent = 'Error: ' + response.data.message;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('sectionStatus').textContent = 'An error occurred';
+            })
+            .finally(() => {
+                this.disabled = false;
+                this.textContent = '✂️ Generate Sections';
+            });
+    });
+    </script>
 </body>
 </html>

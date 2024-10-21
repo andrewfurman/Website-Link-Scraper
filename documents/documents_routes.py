@@ -7,6 +7,7 @@ from datetime import datetime
 from flask import jsonify
 from .add_documents_from_source import add_documents_from_source_websites
 from .extract_missing_full_text import extract_missing_full_text
+from .create_document_sections import create_document_sections
 
 documents_bp = Blueprint('documents', __name__, template_folder='templates')
 
@@ -80,3 +81,18 @@ def view_document(id):
         return render_template('view_document.html', document=document)
     finally:
         session.close()
+
+@documents_bp.route('/create_sections/<int:document_id>', methods=['POST'])
+def create_sections(document_id):
+    result = create_document_sections(document_id)
+    if isinstance(result, list):
+        return jsonify({
+            "success": True,
+            "message": f"Created {len(result)} sections for document {document_id}",
+            "sections_created": len(result)
+        }), 200
+    else:
+        return jsonify({
+            "success": False,
+            "message": result
+        }), 400
