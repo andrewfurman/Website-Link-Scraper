@@ -117,11 +117,13 @@ def extract_full_text_route(document_id):
     else:
         return jsonify({"success": False, "message": result}), 400
 
-# Add the new route for summarizing a document
 @documents_bp.route('/summarize_document/<int:document_id>', methods=['POST'])
 def summarize_document(document_id):
-    result = summarize_document_gpt(document_id)
-    if result.startswith("Success"):
-        return jsonify({"success": True, "message": result}), 200
-    else:
-        return jsonify({"success": False, "message": result}), 400
+    try:
+        result = summarize_document_gpt(document_id)
+        if result.startswith("Success"):
+            return jsonify({"success": True, "message": result}), 200
+        else:
+            return jsonify({"success": False, "message": result}), 400
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500

@@ -255,47 +255,53 @@
         });
 
         document.getElementById('summarizeDocumentBtn').addEventListener('click', function() {
-            this.disabled = true;
-            document.getElementById('summarizeStatus').textContent = '';
+    this.disabled = true;
+    document.getElementById('summarizeStatus').textContent = '';
 
-            let startTime = Date.now();
-            let buttonText = this.textContent;
+    let startTime = Date.now();
+    let buttonText = this.textContent;
 
-            // Function to format the time
-            function formatTime(ms) {
-                let seconds = Math.floor(ms / 1000);
-                let minutes = Math.floor(seconds / 60);
-                seconds = seconds % 60;
-                return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    function formatTime(ms) {
+        let seconds = Math.floor(ms / 1000);
+        let minutes = Math.floor(seconds / 60);
+        seconds = seconds % 60;
+        return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    }
+
+    let intervalId = setInterval(() => {
+        let elapsedTime = Date.now() - startTime;
+        this.textContent = `🔄 Summarizing for ${formatTime(elapsedTime)}`;
+    }, 1000);
+
+    axios.post('/documents/summarize_document/{{ document.id }}')
+        .then(response => {
+            if (response.data.success) {
+                document.getElementById('summarizeStatus').textContent = response.data.message;
+                location.reload();
+            } else {
+                document.getElementById('summarizeStatus').textContent = 'Error: ' + response.data.message;
             }
-
-            // Set up interval to update button text
-            let intervalId = setInterval(() => {
-                let elapsedTime = Date.now() - startTime;
-                this.textContent = `🔄 Summarizing for ${formatTime(elapsedTime)}`;
-            }, 1000);
-
-            axios.post('/documents/summarize_document/{{ document.id }}')
-                .then(response => {
-                    if (response.data.success) {
-                        document.getElementById('summarizeStatus').textContent = response.data.message;
-                        // Optionally, you can reload the page to show the updated summary
-                        location.reload();
-                    } else {
-                        document.getElementById('summarizeStatus').textContent = 'Error: ' + response.data.message;
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    document.getElementById('summarizeStatus').textContent = 'An error occurred';
-                })
-                .finally(() => {
-                    // Clear the interval
-                    clearInterval(intervalId);
-                    this.disabled = false;
-                    this.textContent = buttonText;
-                });
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            if (error.response) {
+                console.error('Response data:', error.response.data);
+                console.error('Response status:', error.response.status);
+                document.getElementById('summarizeStatus').textContent = `Error ${error.response.status}: ${JSON.stringify(error.response.data)}`;
+            } else if (error.request) {
+                console.error('Request:', error.request);
+                document.getElementById('summarizeStatus').textContent = 'No response received from server';
+            } else {
+                console.error('Error message:', error.message);
+                document.getElementById('summarizeStatus').textContent = 'Error: ' + error.message;
+            }
+        })
+        .finally(() => {
+            clearInterval(intervalId);
+            this.disabled = false;
+            this.textContent = buttonText;
         });
+});
     </script>
 </body>
 </html>
