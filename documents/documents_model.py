@@ -16,6 +16,7 @@ class Document(Base):
     url = Column(Text, nullable=True)
     summary = Column(Text, nullable=True)
     word_count = Column(Integer, nullable=True)
+    page_count = Column(Integer, nullable=True)
     created_date = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_date = Column(DateTime(timezone=True), onupdate=func.now(), nullable=True)
 

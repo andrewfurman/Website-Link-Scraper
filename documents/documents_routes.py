@@ -11,6 +11,7 @@ from .add_documents_from_source import add_documents_from_source_websites
 from .extract_missing_full_text import extract_missing_full_text
 from .create_document_sections import create_document_sections
 from .extract_full_text import extract_full_text
+from .summarize_document_gpt import summarize_document_gpt
 
 documents_bp = Blueprint('documents', __name__, template_folder='templates')
 
@@ -103,6 +104,15 @@ def create_sections(document_id):
 @documents_bp.route('/extract_full_text/<int:document_id>', methods=['POST'])
 def extract_full_text_route(document_id):
     result = extract_full_text(document_id)
+    if result.startswith("Success"):
+        return jsonify({"success": True, "message": result}), 200
+    else:
+        return jsonify({"success": False, "message": result}), 400
+
+# Add the new route for summarizing a document
+@documents_bp.route('/summarize_document/<int:document_id>', methods=['POST'])
+def summarize_document(document_id):
+    result = summarize_document_gpt(document_id)
     if result.startswith("Success"):
         return jsonify({"success": True, "message": result}), 200
     else:
