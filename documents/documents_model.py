@@ -42,5 +42,8 @@ class DocumentSection(Base):
     # Add relationship to Document
     document = relationship("Document", back_populates="sections")
 
+    # Add relationship to Requirement
+    requirements = relationship("Requirement", back_populates="document_section")
+
     def __repr__(self):
         return f"<DocumentSection(id={self.id}, document_id={self.document_id}, start_page={self.start_page}, end_page={self.end_page})>"

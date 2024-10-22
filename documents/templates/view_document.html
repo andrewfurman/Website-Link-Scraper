@@ -21,6 +21,12 @@
                     ✂️ Generate Sections
                 </button>
                 <span id="sectionStatus" class="ml-4 text-sm"></span>
+
+                <!-- Extract Requirements Button -->
+                <button id="extractRequirementsBtn" class="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded ml-2">
+                    ✨ Extract Requirements
+                </button>
+                <span id="requirementsStatus" class="ml-4 text-sm"></span>
             </div>
             
             <!-- Document Details -->
@@ -58,6 +64,41 @@
                 </table>
             </div>
 
+            <!-- Requirements Table -->
+            <div class="mb-8">
+                <h2 class="text-2xl font-semibold text-blue-800 mb-4">Requirements</h2>
+                <table class="w-full border-collapse border border-gray-300">
+                    <thead>
+                        <tr class="bg-gray-100">
+                            <th class="border border-gray-300 p-2">ID</th>
+                            <th class="border border-gray-300 p-2">Section ID</th>
+                            <th class="border border-gray-300 p-2">Section Title</th>
+                            <th class="border border-gray-300 p-2">Description</th>
+                            <th class="border border-gray-300 p-2">Workstream</th>
+                            <th class="border border-gray-300 p-2">Page Number</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for section in document.sections %}
+                            {% for requirement in section.requirements %}
+                            <tr>
+                                <td class="border border-gray-300 p-2">{{ requirement.id }}</td>
+                                <td class="border border-gray-300 p-2">{{ requirement.section_id }}</td>
+                                <td class="border border-gray-300 p-2">{{ requirement.section_title }}</td>
+                                <td class="border border-gray-300 p-2">
+                                    <div class="overflow-auto h-20">
+                                        <pre class="text-xs whitespace-pre-wrap break-words overflow-wrap-anywhere max-w-xs">{{ requirement.requirement_description }}</pre>
+                                    </div>
+                                </td>
+                                <td class="border border-gray-300 p-2">{{ requirement.workstream }}</td>
+                                <td class="border border-gray-300 p-2">{{ requirement.page_number }}</td>
+                            </tr>
+                            {% endfor %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
             <!-- Document Sections -->
             <div class="mb-8">
                 <h2 class="text-2xl font-semibold text-blue-800 mb-4">Document Sections</h2>
@@ -90,12 +131,20 @@
             </div>
 
             <!-- Full Contents -->
+
             <div>
-                <h2 class="text-2xl font-semibold text-blue-800 mb-4">Full Contents</h2>
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-2xl font-semibold text-blue-800">Full Contents</h2>
+                    <button id="extractFullTextBtn" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                        📑 Extract Full Document Text
+                    </button>
+                </div>
+                <div id="extractStatus" class="text-sm mb-2"></div>
                 <div class="border border-gray-300 p-2 h-64 overflow-auto">
                     <pre class="text-xs">{{ document.full_contents }}</pre>
                 </div>
             </div>
+            
         </div>
     </div>
     <script>
@@ -122,6 +171,56 @@
                 this.textContent = '✂️ Generate Sections';
             });
     });
+
+    document.getElementById('extractRequirementsBtn').addEventListener('click', function() {
+            this.disabled = true;
+            this.textContent = '🔄 Processing...';
+            document.getElementById('requirementsStatus').textContent = '';
+
+            axios.post('/requirements/create_requirements_for_document/{{ document.id }}')
+                .then(response => {
+                    if (response.data.success) {
+                        document.getElementById('requirementsStatus').textContent = response.data.message;
+                        // Optionally, you can reload the page to show the new requirements
+                        location.reload();
+                    } else {
+                        document.getElementById('requirementsStatus').textContent = 'Error: ' + response.data.message;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    document.getElementById('requirementsStatus').textContent = 'An error occurred';
+                })
+                .finally(() => {
+                    this.disabled = false;
+                    this.textContent = '✨ Extract Requirements';
+                });
+        });
+
+        document.getElementById('extractFullTextBtn').addEventListener('click', function() {
+            this.disabled = true;
+            this.textContent = '🔄 Extracting...';
+            document.getElementById('extractStatus').textContent = '';
+
+            axios.post('/documents/extract_full_text/{{ document.id }}')
+                .then(response => {
+                    if (response.data.success) {
+                        document.getElementById('extractStatus').textContent = response.data.message;
+                        // Reload the page to show the updated full text
+                        location.reload();
+                    } else {
+                        document.getElementById('extractStatus').textContent = 'Error: ' + response.data.message;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    document.getElementById('extractStatus').textContent = 'An error occurred';
+                })
+                .finally(() => {
+                    this.disabled = false;
+                    this.textContent = '📑 Extract Full Document Text';
+                });
+        });
     </script>
 </body>
 </html>

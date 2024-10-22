@@ -14,6 +14,7 @@ pytz = "^2023.3"
 beautifulsoup4 = "^4.10.0"
 requests = "^2.26.0"
 pdfplumber = "^0.10.2"
+openai = "^1.3.0"
 
 [tool.pyright]
 # https://github.com/microsoft/pyright/blob/main/docs/configuration.md

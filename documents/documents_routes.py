@@ -1,13 +1,16 @@
+import os
 from flask import Blueprint, render_template, request, redirect, url_for, jsonify
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-import os
-from documents.documents_model import Document
+from sqlalchemy.orm import joinedload
+from documents.documents_model import Document, DocumentSection
+from requirements.requirements_model import Requirement
 from datetime import datetime
 from flask import jsonify
 from .add_documents_from_source import add_documents_from_source_websites
 from .extract_missing_full_text import extract_missing_full_text
 from .create_document_sections import create_document_sections
+from .extract_full_text import extract_full_text
 
 documents_bp = Blueprint('documents', __name__, template_folder='templates')
 
@@ -96,3 +99,11 @@ def create_sections(document_id):
             "success": False,
             "message": result
         }), 400
+
+@documents_bp.route('/extract_full_text/<int:document_id>', methods=['POST'])
+def extract_full_text_route(document_id):
+    result = extract_full_text(document_id)
+    if result.startswith("Success"):
+        return jsonify({"success": True, "message": result}), 200
+    else:
+        return jsonify({"success": False, "message": result}), 400

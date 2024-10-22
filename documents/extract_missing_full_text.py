@@ -1,6 +1,6 @@
 # extract_missing_full_text.py
 
-# This file should have one function called extract missing full text from documents. Dysfunction should have no parameters.
+# This file should have one function called extract missing full text from documents. This function should have no parameters.
 
 # the function should loop through all of the documents in the document database table and if the full_contents column is empty, it should pass the url to that document to the get_url_text function and save the string returned to the full_contents column for that document.
 
