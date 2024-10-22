@@ -15,6 +15,8 @@ class Document(Base):
     full_contents = Column(Text, nullable=True)
     url = Column(Text, nullable=True)
     summary = Column(Text, nullable=True)
+    table_of_contents = Column(Text, nullable=True)
+    extended_summary = Column(Text, nullable=True)
     word_count = Column(Integer, nullable=True)
     page_count = Column(Integer, nullable=True)
     created_date = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
