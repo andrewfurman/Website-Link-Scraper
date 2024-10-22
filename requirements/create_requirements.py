@@ -94,7 +94,7 @@ def create_requirements(document_section_id: int):
                                     "properties": {
                                         "section_id": {
                                             "type": "string",
-                                            "description": "Unique identifier for the section within the document."
+                                            "description": "Unique identifier for the section within the document. An example would be '1.1'"
                                         },
                                         "section_title": {
                                             "type": "string",

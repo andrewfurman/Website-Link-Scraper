@@ -9,6 +9,7 @@ from sqlalchemy.orm import sessionmaker
 import os
 import re
 from documents.documents_model import Document, DocumentSection
+from requirements.requirements_model import Requirement
 
 def create_document_sections(document_id):
     # Set up database connection
@@ -24,13 +25,21 @@ def create_document_sections(document_id):
         if not document:
             return f"Error: Document with ID {document_id} not found."
 
-        # Delete existing document sections
+        # Delete existing requirements and document sections
         try:
+            # First, delete requirements associated with the document sections
+            session.query(Requirement).filter(
+                Requirement.document_section_id.in_(
+                    session.query(DocumentSection.id).filter(DocumentSection.document_id == document_id)
+                )
+            ).delete(synchronize_session=False)
+            # Then, delete existing document sections
             session.query(DocumentSection).filter(DocumentSection.document_id == document_id).delete()
+
             session.commit()
         except Exception as e:
             session.rollback()
-            return f"Error deleting existing sections: {str(e)}"
+            return f"Error deleting existing requirements and sections: {str(e)}"
 
         # Split the full_contents into pages, separating markers and content
         parts = re.split(r'(🅿️ Start Page \d+)', document.full_contents)

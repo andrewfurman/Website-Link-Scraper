@@ -88,18 +88,26 @@ def view_document(id):
 
 @documents_bp.route('/create_sections/<int:document_id>', methods=['POST'])
 def create_sections(document_id):
-    result = create_document_sections(document_id)
-    if isinstance(result, list):
-        return jsonify({
-            "success": True,
-            "message": f"Created {len(result)} sections for document {document_id}",
-            "sections_created": len(result)
-        }), 200
-    else:
+    try:
+        result = create_document_sections(document_id)
+        if isinstance(result, list):
+            return jsonify({
+                "success": True,
+                "message": f"Created {len(result)} sections for document {document_id}",
+                "sections_created": len(result)
+            }), 200
+        else:
+            print(f"Error in create_document_sections: {result}")  # Add this line
+            return jsonify({
+                "success": False,
+                "message": str(result)
+            }), 400
+    except Exception as e:
+        print(f"Exception in create_sections: {str(e)}")  # Add this line
         return jsonify({
             "success": False,
-            "message": result
-        }), 400
+            "message": f"An error occurred: {str(e)}"
+        }), 500
 
 @documents_bp.route('/extract_full_text/<int:document_id>', methods=['POST'])
 def extract_full_text_route(document_id):

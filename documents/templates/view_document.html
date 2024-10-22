@@ -14,15 +14,6 @@
     <div class="w-full p-8">
         <div class="mx-auto bg-white rounded-lg shadow-md w-full p-6">
             <h1 class="text-4xl font-bold text-blue-900 mb-6">View Document</h1>
-
-            <!-- Generate Sections button and status message area -->
-            <div class="mb-4">
-                <button id="generateSectionsBtn" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
-                    ✂️ Generate Sections
-                </button>
-                <span id="sectionStatus" class="ml-4 text-sm"></span>
-                
-            </div>
             
             <!-- Document Details -->
             <div class="mb-8">
@@ -118,7 +109,15 @@
             
             <!-- Document Sections -->
             <div class="mb-8">
-                <h2 class="text-2xl font-semibold text-blue-800 mb-4">Document Sections</h2>
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-2xl font-semibold text-blue-800">Document Sections</h2>
+                    <div>
+                        <button id="generateSectionsBtn" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
+                            ✂️ Generate Sections
+                        </button>
+                        <span id="sectionStatus" class="ml-2 text-sm"></span>
+                    </div>
+                </div>
                 <table class="w-full border-collapse border border-gray-300">
                     <thead>
                         <tr class="bg-gray-100">
@@ -164,30 +163,46 @@
             
         </div>
     </div>
+    
     <script>
-    document.getElementById('generateSectionsBtn').addEventListener('click', function() {
-        this.disabled = true;
-        this.textContent = '🔄 Processing...';
-        document.getElementById('sectionStatus').textContent = '';
-        axios.post('/documents/create_sections/{{ document.id }}')
-            .then(response => {
-                if (response.data.success) {
-                    document.getElementById('sectionStatus').textContent = response.data.message;
-                    // Optionally, you can reload the page to show the new sections
-                    location.reload();
-                } else {
-                    document.getElementById('sectionStatus').textContent = 'Error: ' + response.data.message;
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                document.getElementById('sectionStatus').textContent = 'An error occurred';
-            })
-            .finally(() => {
-                this.disabled = false;
-                this.textContent = '✂️ Generate Sections';
-            });
-    });
+        document.getElementById('generateSectionsBtn').addEventListener('click', function() {
+            this.disabled = true;
+            this.textContent = '🔄 Processing...';
+            document.getElementById('sectionStatus').textContent = '';
+            axios.post('/documents/create_sections/{{ document.id }}')
+                .then(response => {
+                    if (response.data.success) {
+                        document.getElementById('sectionStatus').textContent = response.data.message;
+                        // Optionally, you can reload the page to show the new sections
+                        location.reload();
+                    } else {
+                        document.getElementById('sectionStatus').textContent = 'Error: ' + response.data.message;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    if (error.response) {
+                        // The request was made and the server responded with a status code
+                        // that falls out of the range of 2xx
+                        console.error('Data:', error.response.data);
+                        console.error('Status:', error.response.status);
+                        console.error('Headers:', error.response.headers);
+                        document.getElementById('sectionStatus').textContent = 'Error: ' + JSON.stringify(error.response.data);
+                    } else if (error.request) {
+                        // The request was made but no response was received
+                        console.error('Request:', error.request);
+                        document.getElementById('sectionStatus').textContent = 'No response received from server';
+                    } else {
+                        // Something happened in setting up the request that triggered an Error
+                        console.error('Error message:', error.message);
+                        document.getElementById('sectionStatus').textContent = 'Error: ' + error.message;
+                    }
+                })
+                .finally(() => {
+                    this.disabled = false;
+                    this.textContent = '✂️ Generate Sections';
+                });
+        });
 
     document.getElementById('extractRequirementsBtn').addEventListener('click', function() {
             this.disabled = true;
