@@ -3,7 +3,7 @@
 from sqlalchemy import Column, Integer, Text, DateTime, ForeignKey
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
-from documents.documents_model import Base, DocumentSection
+from documents.documents_model import Base
 
 class Requirement(Base):
     __tablename__ = 'requirements'

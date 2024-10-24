@@ -3,7 +3,14 @@
 from sqlalchemy import Column, Integer, Text, DateTime, ForeignKey
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
+import sys, os
+
+
+# Add the parent directory to the Python path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from source_websites.source_website_model import Base
+from requirements.requirements_model import Requirement
 
 class Document(Base):
     __tablename__ = 'documents'
@@ -13,6 +20,7 @@ class Document(Base):
     title = Column(Text, nullable=True)
     author = Column(Text, nullable=True)
     full_contents = Column(Text, nullable=True)
+    compressed_document = Column(Text, nullable=True)
     url = Column(Text, nullable=True)
     summary = Column(Text, nullable=True)
     table_of_contents = Column(Text, nullable=True)
