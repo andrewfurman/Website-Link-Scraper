@@ -41,16 +41,27 @@ def summarize_document_gpt(document_id):
             return f"Error: Document with ID {document_id} not found."
         update_document_counts(session, document)
         
+        # Prepare document content with truncation if needed
+        content = document.full_contents
+        word_count = document.word_count
+        truncation_notice = ""
+        
+        if word_count > 80000:
+            words = content.split()
+            content = " ".join(words[:80000])
+            truncation_notice = f"Note: This is the first 80,000 words of a {word_count} word document. Please provide the best possible summary based on this limited information."
+        
         payload = {
             "model": "gpt-4o-mini",
             "messages": [
                 {
                     "role": "system",
-                    "content": "You are an AI assistant tasked with analyzing and summarizing documents. Please provide a concise summary, an extended summary, identify the main chapter topics, suggest a title if not present, and identify the author if possible."
+                    "content": "You are an AI assistant tasked with analyzing and summarizing documents. Please provide a concise summary, an extended summary, identify the main chapter topics, suggest a title if not present, and identify the author if possible." + 
+                    (" " + truncation_notice if truncation_notice else "")
                 },
                 {
                     "role": "user",
-                    "content": f"Please analyze the following document:\n\n{document.full_contents}"
+                    "content": f"Please analyze the following document:\n\n{content}"
                 }
             ],
             "response_format": {
@@ -89,11 +100,8 @@ def summarize_document_gpt(document_id):
             }
         }
         
-        # Send request to OpenAI API
         response = client.chat.completions.create(**payload)
-        # Extract the generated fields from the response
         generated_fields = json.loads(response.choices[0].message.content)
-        # Update the document with the generated fields
         document.summary = generated_fields['summary']
         document.extended_summary = generated_fields['extended_summary']
         document.chapter = generated_fields['chapter']

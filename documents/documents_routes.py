@@ -117,48 +117,13 @@ def extract_full_text_route(document_id):
     else:
         return jsonify({"success": False, "message": result}), 400
 
-@documents_bp.route('/summarize_document', methods=['POST'])
-def summarize_document():
+@documents_bp.route('/summarize_document/<int:document_id>', methods=['POST'])
+def summarize_document(document_id):
     try:
-        # Get document IDs from request JSON
-        document_ids = request.json.get('document_ids', [])
-        
-        if not document_ids:
-            return jsonify({
-                "success": False, 
-                "message": "No document IDs provided"
-            }), 400
-
-        results = []
-        for doc_id in document_ids:
-            try:
-                result = summarize_document_gpt(doc_id)
-                results.append({
-                    "document_id": doc_id,
-                    "success": result.startswith("Success"),
-                    "message": result
-                })
-            except Exception as e:
-                results.append({
-                    "document_id": doc_id,
-                    "success": False,
-                    "message": str(e)
-                })
-
-        # Check if any documents were successfully processed
-        if any(r["success"] for r in results):
-            return jsonify({
-                "success": True,
-                "results": results
-            }), 200
+        result = summarize_document_gpt(document_id)
+        if result.startswith("Success"):
+            return jsonify({"success": True, "message": result}), 200
         else:
-            return jsonify({
-                "success": False,
-                "results": results
-            }), 400
-
+            return jsonify({"success": False, "message": result}), 400
     except Exception as e:
-        return jsonify({
-            "success": False,
-            "message": str(e)
-        }), 500
+        return jsonify({"success": False, "message": str(e)}), 500

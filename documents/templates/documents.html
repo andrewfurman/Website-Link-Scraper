@@ -21,42 +21,43 @@
             <div class="overflow-x-auto">
                 
                 <!-- documents table start -->
+
                 <table class="w-full table-fixed bg-white border border-gray-300">
                     <thead>
                         <tr class="bg-blue-900 text-white">
-                            <th class="w-12 p-2">
+                            <th class="w-8 p-2">
                                 <input type="checkbox" id="select-all-documents" class="form-checkbox h-4 w-4">
                             </th>
-                            <th class="w-24 p-2 break-words">Chapter</th>
-                            <th class="w-40 p-2 break-words">Title</th>
-                            <th class="w-48 p-2 break-words">URL</th>
-                            <th class="w-24 p-2 break-words">Page Count</th>
-                            <th class="w-24 p-2 break-words">Word Count</th>
+                            <th class="w-20 p-2 break-words">Chapter</th>
+                            <th class="w-80 p-2 break-words">Title</th>
+                            <th class="w-72 p-2 break-words">URL</th>
+                            <th class="w-16 p-2 break-words">Pages</th>
+                            <th class="w-16 p-2 break-words">Words</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for document in documents %}
                         <tr id="document-{{ document.id }}">
-                            <td class="w-12 p-2 text-center">
+                            <td class="w-8 p-2 text-center">
                                 <input type="checkbox" class="document-checkbox form-checkbox h-4 w-4" id="document-checkbox-{{ document.id }}" value="{{ document.id }}">
                             </td>
-                            <td class="w-24 p-2 break-words whitespace-normal">
+                            <td class="w-20 p-2 break-words whitespace-normal">
                                 <a href="{{ url_for('documents.view_document', id=document.id) }}" class="text-blue-600 hover:text-blue-800 underline">
                                     {{ document.chapter }}
                                 </a>
                             </td>
-                            <td class="w-48 p-2 break-words whitespace-normal">
+                            <td class="w-80 p-2 break-words whitespace-normal">
                                 {{ document.title }}
                             </td>
-                            <td class="w-64 p-2 break-words whitespace-normal">
+                            <td class="w-72 p-2 break-words whitespace-normal">
                                 <a href="{{ document.url }}" class="text-blue-600 hover:text-blue-800 underline" target="_blank">
                                     {{ document.url }}
                                 </a>
                             </td>
-                            <td class="w-24 p-2 break-words whitespace-normal">
+                            <td class="w-16 p-2 break-words whitespace-normal">
                                 {{ document.page_count|default('N/A', true) }}
                             </td>
-                            <td class="w-24 p-2 break-words whitespace-normal">
+                            <td class="w-16 p-2 break-words whitespace-normal">
                                 {{ '{:,}'.format(document.word_count) if document.word_count else 'N/A' }}
                             </td>
                         </tr>
@@ -156,6 +157,64 @@
             this.textContent = '🌐 Add Docs from Sources';
             this.disabled = false;
         });
+    });
+
+    // Add this right after your existing script tag content
+
+    // Handle summarize button click
+    document.getElementById('summarizeButton').addEventListener('click', async function() {
+        // Disable button and show processing state
+        this.disabled = true;
+        let seconds = 0;
+        const timer = setInterval(() => {
+            seconds++;
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = seconds % 60;
+            this.textContent = `🔄 Processing... ${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+        }, 1000);
+        
+        // Get all selected document IDs
+        const selectedIds = Array.from(document.querySelectorAll('.document-checkbox:checked'))
+            .map(checkbox => checkbox.value);
+        
+        // Create array of promises for parallel execution
+        const requests = selectedIds.map(id => {
+            return fetch(`/documents/summarize_document/${id}`, {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => ({
+                id: id,
+                ...data
+            }));
+        });
+        
+        try {
+            // Execute all requests in parallel
+            const results = await Promise.all(requests);
+            
+            // Stop the timer
+            clearInterval(timer);
+            
+            // Compile results message
+            const successCount = results.filter(r => r.success).length;
+            const failureCount = results.length - successCount;
+            let message = `Summarization complete!\n`;
+            message += `⏱️ Total time: ${Math.floor(seconds / 60)}:${(seconds % 60).toString().padStart(2, '0')}\n`;
+            message += `✅ Successful: ${successCount}\n`;
+            message += `❌ Failed: ${failureCount}\n\n`;
+            message += results.map(r => `Document ${r.id}: ${r.message}`).join('\n');
+            
+            alert(message);
+            // Refresh the page after clicking OK
+            window.location.reload();
+        } catch (error) {
+            // Stop the timer
+            clearInterval(timer);
+            alert('Error occurred during summarization: ' + error);
+            // Refresh the page after clicking OK
+            window.location.reload();
+        }
     });
 </script>
     
