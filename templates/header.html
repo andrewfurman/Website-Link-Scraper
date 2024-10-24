@@ -9,3 +9,13 @@
         </div>
     </div>
 </nav>
+
+<!-- Add Marked.js -->
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script>
+    // Utility function to format markdown text
+    function formatMarkdown(text) {
+        if (!text) return '';
+        return marked.parse(text);
+    }
+</script>

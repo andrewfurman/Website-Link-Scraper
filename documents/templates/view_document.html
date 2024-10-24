@@ -24,6 +24,9 @@
                     </button>
                 </div>
                 <div id="summarizeStatus" class="text-sm mb-2"></div>
+                
+                <!-- Document Details Table -->
+                <!-- Replace the existing Document Details table with this updated version -->
                 <table class="w-full border-collapse border border-gray-300">
                     <tr>
                         <th class="border border-gray-300 p-2 bg-gray-100">ID</th>
@@ -46,16 +49,20 @@
                         </td>
                     </tr>
                     <tr>
-                        <th class="border border-gray-300 p-2 bg-gray-100">Created Date</th>
-                        <td class="border border-gray-300 p-2">{{ document.created_date }}</td>
-                    </tr>
-                    <tr>
-                        <th class="border border-gray-300 p-2 bg-gray-100">Updated Date</th>
-                        <td class="border border-gray-300 p-2">{{ document.updated_date }}</td>
-                    </tr>
-                    <tr>
                         <th class="border border-gray-300 p-2 bg-gray-100">Summary</th>
-                        <td class="border border-gray-300 p-2">{{ document.summary }}</td>
+                        <td class="border border-gray-300 p-2" id="summary-content"></td>
+                    </tr>
+                    <tr>
+                        <th class="border border-gray-300 p-2 bg-gray-100">Extended Summary</th>
+                        <td class="border border-gray-300 p-2" id="extended-summary-content"></td>
+                    </tr>
+                    <tr>
+                        <th class="border border-gray-300 p-2 bg-gray-100">Table of Contents</th>
+                        <td class="border border-gray-300 p-2" id="toc-content">
+                    </td>
+                    <tr>
+                        <th class="border border-gray-300 p-2 bg-gray-100">Chapter</th>
+                        <td class="border border-gray-300 p-2">{{ document.chapter }}</td>
                     </tr>
                     <tr>
                         <th class="border border-gray-300 p-2 bg-gray-100">Word Count</th>
@@ -65,7 +72,17 @@
                         <th class="border border-gray-300 p-2 bg-gray-100">Page Count</th>
                         <td class="border border-gray-300 p-2">{{ document.page_count or 'N/A' }}</td>
                     </tr>
+                    <tr>
+                        <th class="border border-gray-300 p-2 bg-gray-100">Created Date</th>
+                        <td class="border border-gray-300 p-2">{{ document.created_date }}</td>
+                    </tr>
+                    <tr>
+                        <th class="border border-gray-300 p-2 bg-gray-100">Updated Date</th>
+                        <td class="border border-gray-300 p-2">{{ document.updated_date }}</td>
+                    </tr>
                 </table>
+                <!-- Document Details Table END -->
+                
             </div>
 
             <!-- Requirements Table -->
@@ -306,6 +323,19 @@
             this.textContent = buttonText;
         });
 });
+
+    // Format markdown content when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        // Format Summary
+        const summaryContent = `{{ document.summary|safe }}`;
+        document.getElementById('summary-content').innerHTML = formatMarkdown(summaryContent);
+        // Format Extended Summary
+        const extendedSummaryContent = `{{ document.extended_summary|safe }}`;
+        document.getElementById('extended-summary-content').innerHTML = formatMarkdown(extendedSummaryContent);
+        // Format Table of Contents
+        const tocContent = `{{ document.table_of_contents|safe }}`;
+        document.getElementById('toc-content').innerHTML = formatMarkdown(tocContent);
+    });
     </script>
 </body>
 </html>

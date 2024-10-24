@@ -46,10 +46,10 @@ def summarize_document_gpt(document_id):
         word_count = document.word_count
         truncation_notice = ""
         
-        if word_count > 80000:
+        if word_count > 75000:
             words = content.split()
-            content = " ".join(words[:80000])
-            truncation_notice = f"Note: This is the first 80,000 words of a {word_count} word document. Please provide the best possible summary based on this limited information."
+            content = " ".join(words[:75000])
+            truncation_notice = f"Note: This is the first 75,000 words of a {word_count} word document. Please provide the best possible summary based on this limited information."
         
         payload = {
             "model": "gpt-4o-mini",
@@ -91,9 +91,13 @@ def summarize_document_gpt(document_id):
                             "author": {
                                 "type": "string",
                                 "description": "The author(s) of the document. Example: 'Centers for Medicare & Medicaid Services (CMS)'"
+                            },
+                            "table_of_contents": {
+                                "type": "string",
+                                "description": "A detailed listing of the table of contents for the document. Example: 'Table of Contents: Chapter 1 - Introduction, Sections 1.1 - Medicare Ambulance Claims Processing Guide, 1.2 - Medicare Ambulance Claims Processing. Format this table of contents as markdown text"
                             }
                         },
-                        "required": ["summary", "extended_summary", "chapter", "title", "author"],
+                        "required": ["summary", "extended_summary", "chapter", "title", "author", "table_of_contents"],
                         "additionalProperties": False
                     }
                 }
@@ -107,6 +111,8 @@ def summarize_document_gpt(document_id):
         document.chapter = generated_fields['chapter']
         document.title = generated_fields['title']
         document.author = generated_fields['author']
+        document.table_of_contents = generated_fields['table_of_contents']
+
         session.commit()
         return f"Success: Document ID {document_id} has been summarized and updated."
     except Exception as e:
