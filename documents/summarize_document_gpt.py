@@ -75,7 +75,7 @@ def summarize_document_gpt(document_id):
                             },
                             "title": {
                                 "type": "string",
-                                "description": "A descriptive title of the document. Example: Medicare Ambulance Claims Processing Guide: Chapter 15 - Comprehensive Payment, Billing, and Documentation Guidelines (Rev. 12414, Issued 12-19-23)"
+                                "description": "A descriptive title of the document. This should not include just the title, but should also be descriptive of what the document contnts are. Example: Medicare Ambulance Claims Processing Guide: Chapter 15 - Comprehensive Payment, Billing, and Documentation Guidelines (Rev. 12414, Issued 12-19-23)"
                             },
                             "author": {
                                 "type": "string",
@@ -97,8 +97,8 @@ def summarize_document_gpt(document_id):
         document.summary = generated_fields['summary']
         document.extended_summary = generated_fields['extended_summary']
         document.chapter = generated_fields['chapter']
-        document.title = generated_fields['title'] if not document.title else document.title
-        document.author = generated_fields['author'] if not document.author else document.author
+        document.title = generated_fields['title']
+        document.author = generated_fields['author']
         session.commit()
         return f"Success: Document ID {document_id} has been summarized and updated."
     except Exception as e:

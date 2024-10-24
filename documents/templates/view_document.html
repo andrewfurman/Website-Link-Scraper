@@ -18,7 +18,7 @@
             <!-- Document Details -->
             <div class="mb-8">
                 <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-2xl font-semibold text-blue-800">Document Details</h2>
+                    <h4 class="font-semibold text-blue-500">Document Details</h2>
                     <button id="summarizeDocumentBtn" class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded">
                         📋 Summarize Document
                     </button>
@@ -39,7 +39,11 @@
                     </tr>
                     <tr>
                         <th class="border border-gray-300 p-2 bg-gray-100">URL</th>
-                        <td class="border border-gray-300 p-2">{{ document.url }}</td>
+                        <td class="border border-gray-300 p-2">
+                            <a href="{{ document.url }}" class="text-blue-600 hover:text-blue-800 underline" target="_blank">
+                                {{ document.url }}
+                            </a>
+                        </td>
                     </tr>
                     <tr>
                         <th class="border border-gray-300 p-2 bg-gray-100">Created Date</th>
