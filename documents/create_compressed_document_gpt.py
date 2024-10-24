@@ -1,6 +1,6 @@
 # the create_compressed_document_gpt(document_id int) function will use the OpenAI API to create a compressed document from the full text of the document.
 
-# this function will use the full_contents field of the document table to create a compressed document using the OpenAI API. This function will send chunks of the full document in 100 page segments.  This will be done by scanning the full_contents field for the page delimiters shown as "🅿️ Start Page 1" "🅿️ Start Page 2" and so on.  It will use these delimiters to split the document into chunks of 100 page segements and request an updated summary of each page in the chunk. The chunk returned will keep the "🅿️ Page 1 Summary: " "🅿️Page 2 Summary: " and so on.
+# this function will use the full_contents field of the document table to create a compressed document using the OpenAI API. This function will send chunks of the full document in 20 page segments.  This will be done by scanning the full_contents field for the page delimiters shown as "🅿️ Start Page 1" "🅿️ Start Page 2" and so on.  It will use these delimiters to split the document into chunks of 20 page segements and request an updated summary of each page in the chunk. The chunk returned will keep the "🅿️ Page 1 Summary: " "🅿️Page 2 Summary: " and so on.
 
 from sqlalchemy import create_engine, true
 from sqlalchemy.orm import sessionmaker
@@ -9,6 +9,7 @@ import re
 import json
 import sys
 from openai import OpenAI
+from concurrent.futures import ThreadPoolExecutor
 
 # Add the parent directory to the Python path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -25,7 +26,7 @@ def split_into_pages(full_contents):
         pages.pop(0)
     return pages
 
-def create_segments(pages, segment_size=100):
+def create_segments(pages, segment_size):
     return [pages[i:i + segment_size] for i in range(0, len(pages), segment_size)]
 
 def get_page_summaries(segment, base_page_num):
@@ -34,11 +35,11 @@ def get_page_summaries(segment, base_page_num):
         "messages": [
             {
                 "role": "system",
-                "content": "You are an AI assistant tasked with creating concise 100-word summaries for each page of a document."
+                "content": "You are a dilligent document research expert tasked with creating concise 100-word summaries for each page of a document."
             },
             {
                 "role": "user",
-                "content": f"Create a 100-word summary for each of these pages:\n\n{' '.join(segment)}"
+                "content": f"Create a 100-word summary for each of these pages, This is an exerpt from a larger document that needs to be summarized. Please preserve the origianl page numbers found in this document text:\n\n{' '.join(segment)}"
             }
         ],
         "response_format": {
@@ -54,8 +55,14 @@ def get_page_summaries(segment, base_page_num):
                             "items": {
                                 "type": "object",
                                 "properties": {
-                                    "page_number": {"type": "integer"},
-                                    "page_summary": {"type": "string"}
+                                    "page_number": {
+                                        "type": "integer",
+                                        "description": "The page number being summarized, please refer to the page number in the original text sent indicated by '🅿️ Start Page 20' '🅿️ Start Page 21' and so on. do not indicate the number of pages in this request, but instead use the original document."
+                                    },
+                                    "page_summary": {
+                                        "type":"string",
+                                        "description": "A 100 word summary of the page. if the content on the page being summarized is continued from the previous page, start the summary with '⤵️CONTENT CONTINUED FROM PREVIOUS PAGE' followed by the 100 word summary. If the content starts a new section start the summary with '🎉START OF NEW SECTION' followed by the 100 word summary.'"
+                                    }
                                 },
                                 "required": ["page_number", "page_summary"],
                                 "additionalProperties": False
@@ -92,42 +99,35 @@ def get_page_summaries(segment, base_page_num):
 
     return parsed_response
 
-def create_compressed_document_gpt(document_id):
+def create_compressed_document_gpt(document_id, pages_per_segment=5):
     engine = create_engine(os.environ['DATABASE_URL'])
     Session = sessionmaker(bind=engine)
     session = Session()
-
     try:
         document = session.query(Document).filter(Document.id == document_id).first()
         if not document or not document.full_contents:
             return "Error: Document not found or empty."
 
         pages = split_into_pages(document.full_contents)
-        segments = create_segments(pages)
-        compressed_content = []
-
-        for segment_index, segment in enumerate(segments):
-            base_page_num = segment_index * 100
-            summaries = get_page_summaries(segment, base_page_num)
-            
-            for summary in summaries['page_summaries']:
-                compressed_content.append(
-                    f"🅿️ Page {summary['page_number']} Summary: {summary['page_summary']}"
-                )
-
+        segments = create_segments(pages, pages_per_segment)
+        with ThreadPoolExecutor(max_workers=5) as executor:
+            # Calculate base page number using configurable segment size
+            futures = [
+                executor.submit(get_page_summaries, segment, segment_index * pages_per_segment)
+                for segment_index, segment in enumerate(segments)
+            ]
+            compressed_content = []
+            for future in futures:
+                summaries = future.result()
+                for summary in summaries['page_summaries']:
+                    compressed_content.append(
+                        f"🅿️ Page {summary['page_number']} Summary: {summary['page_summary']}"
+                    )
         document.compressed_document = "\n\n".join(compressed_content)
         session.commit()
         return f"Success: Created compressed document for ID {document_id}"
-
     except Exception as e:
         session.rollback()
         return f"Error: {str(e)}"
     finally:
         session.close()
-
-# Add this at the end of your create_compressed_document_gpt.py file
-
-if __name__ == "__main__":
-    document_id = 22
-    result = create_compressed_document_gpt(document_id)
-    print(result)

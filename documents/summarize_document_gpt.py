@@ -6,6 +6,7 @@
 
 # This function will then call the OpenAI API to update these fields for the document ID: summary, extended_summary, chapter, title, and author.
 
+import asyncio
 import os
 import sys
 import re
@@ -13,6 +14,9 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from openai import OpenAI
 import json
+from concurrent.futures import ThreadPoolExecutor
+from documents.create_compressed_document_gpt import create_compressed_document_gpt  # Make sure this import works
+
 
 # Add the parent directory to the Python path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -29,6 +33,9 @@ def update_document_counts(session, document):
         if document.page_count == 0:
             document.page_count = (document.word_count + 499) // 500
     session.commit()
+
+def run_openai_request(payload):
+    return client.chat.completions.create(**payload)
 
 def summarize_document_gpt(document_id):
     engine = create_engine(os.environ['DATABASE_URL'])
@@ -104,7 +111,14 @@ def summarize_document_gpt(document_id):
             }
         }
         
-        response = client.chat.completions.create(**payload)
+        # Run both operations in parallel using ThreadPoolExecutor
+        with ThreadPoolExecutor(max_workers=2) as executor:
+            future_compress = executor.submit(create_compressed_document_gpt, document_id)
+            future_openai = executor.submit(run_openai_request, payload)
+    
+            compress_result = future_compress.result()
+            response = future_openai.result()
+    
         generated_fields = json.loads(response.choices[0].message.content)
         document.summary = generated_fields['summary']
         document.extended_summary = generated_fields['extended_summary']
@@ -112,9 +126,9 @@ def summarize_document_gpt(document_id):
         document.title = generated_fields['title']
         document.author = generated_fields['author']
         document.table_of_contents = generated_fields['table_of_contents']
-
         session.commit()
-        return f"Success: Document ID {document_id} has been summarized and updated."
+        return f"Success: Document ID {document_id} has been summarized and compressed. Compression result: {compress_result}"
+    
     except Exception as e:
         session.rollback()
         return f"Error: {str(e)}"
