@@ -12,7 +12,12 @@
 
     <div class="w-full p-8">
         <div class="mx-auto bg-white rounded-lg shadow-md w-full p-6">
-            <h1 class="text-4xl font-bold text-blue-900 py-4 px-2">📄 Documents</h1>
+            <div class="flex justify-between items-center py-4 px-2">
+                <h1 class="text-4xl font-bold text-blue-900">📄 Documents</h1>
+                <button id="summarizeButton" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                    📋 Summarize
+                </button>
+            </div>
             <div class="overflow-x-auto">
                 
                 <!-- documents table start -->
@@ -32,7 +37,7 @@
                     <tbody>
                         {% for document in documents %}
                         <tr id="document-{{ document.id }}">
-                            <td class="w-12 p-2">
+                            <td class="w-12 p-2 text-center">
                                 <input type="checkbox" class="document-checkbox form-checkbox h-4 w-4" id="document-checkbox-{{ document.id }}" value="{{ document.id }}">
                             </td>
                             <td class="w-24 p-2 break-words whitespace-normal">
@@ -52,7 +57,7 @@
                                 {{ document.page_count|default('N/A', true) }}
                             </td>
                             <td class="w-24 p-2 break-words whitespace-normal">
-                                {{ document.word_count|default('N/A', true) }}
+                                {{ '{:,}'.format(document.word_count) if document.word_count else 'N/A' }}
                             </td>
                         </tr>
                         {% endfor %}
@@ -76,8 +81,31 @@
         </div>
     </div>
 
-    <script>
-
+    <script>        
+        // Initially hide the summarize button
+        document.getElementById('summarizeButton').style.display = 'none';
+        
+        // Function to update summarize button visibility
+        function updateSummarizeButtonVisibility() {
+            const checkedBoxes = document.querySelectorAll('.document-checkbox:checked');
+            const summarizeButton = document.getElementById('summarizeButton');
+            summarizeButton.style.display = checkedBoxes.length > 0 ? 'block' : 'none';
+        }
+        
+        // Add change listener to all document checkboxes
+        document.querySelectorAll('.document-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('change', updateSummarizeButtonVisibility);
+        });
+        
+        // Update select-all checkbox listener to also handle button visibility
+        document.getElementById('select-all-documents').addEventListener('change', function() {
+            const isChecked = this.checked;
+            document.querySelectorAll('.document-checkbox').forEach(checkbox => {
+                checkbox.checked = isChecked;
+            });
+            updateSummarizeButtonVisibility();
+        });
+        
         // Select All Documents from Select All Checkbox
         document.getElementById('select-all-documents').addEventListener('change', function() {
             const isChecked = this.checked;
