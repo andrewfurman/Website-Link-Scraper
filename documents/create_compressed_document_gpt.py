@@ -21,7 +21,9 @@ client = OpenAI(api_key=os.environ['OPENAI_API_KEY'])
 def split_into_pages(full_contents):
     if not full_contents:
         return []
-    pages = re.split(r'🅿️ Start Page \d+', full_contents)
+    # Use positive lookbehind to keep the page markers
+    pages = re.split(r'(?=🅿️ Start Page \d+)', full_contents)
+    # Remove empty first element if it exists
     if pages and not pages[0].strip():
         pages.pop(0)
     return pages
@@ -30,16 +32,19 @@ def create_segments(pages, segment_size):
     return [pages[i:i + segment_size] for i in range(0, len(pages), segment_size)]
 
 def get_page_summaries(segment, base_page_num):
+    # Extract page numbers from the segment text to use in the summary
+    page_numbers = [int(num) for num in re.findall(r'🅿️ Start Page (\d+)', ''.join(segment))]
+    
     payload = {
         "model": "gpt-4o-mini",
         "messages": [
             {
                 "role": "system",
-                "content": "You are a dilligent document research expert tasked with creating concise 100-word summaries for each page of a document."
+                "content": "You are a dilligent document research expert tasked with creating concise 50-word summaries for each page of a document."
             },
             {
                 "role": "user",
-                "content": f"Create a 100-word summary for each of these pages, This is an exerpt from a larger document that needs to be summarized. Please preserve the origianl page numbers found in this document text:\n\n{' '.join(segment)}"
+                "content": f"Create a 50-word summary for each of these pages, This is an exerpt from a larger document that needs to be summarized. Please preserve the origianl page numbers found in this document text:\n\n{' '.join(segment)}"
             }
         ],
         "response_format": {
@@ -61,7 +66,7 @@ def get_page_summaries(segment, base_page_num):
                                     },
                                     "page_summary": {
                                         "type":"string",
-                                        "description": "A 100 word summary of the page. if the content on the page being summarized is continued from the previous page, start the summary with '⤵️CONTENT CONTINUED FROM PREVIOUS PAGE' followed by the 100 word summary. If the content starts a new section start the summary with '🎉START OF NEW SECTION' followed by the 100 word summary.'"
+                                        "description": "Always start the description with either '⤵️ CONTENT CONTINUED FROM PREVIOUS PAGE' or '🎉 START OF NEW SECTION' depending on the page content. Following that text, it should state TABLE OF CONTENTS or TITLE PAGE if one of those accuratly summarizes what's on the page. Following those remarks, there should be a 50 word detailed summary of the content on the page free of filler words."
                                     }
                                 },
                                 "required": ["page_number", "page_summary"],
